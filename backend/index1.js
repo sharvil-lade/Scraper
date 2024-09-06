@@ -34,73 +34,27 @@ async function searchLaptopOnAmazon(laptopModel) {
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
-    try {
-        console.log("Navigating to Amazon...");
-        await page.goto('https://www.amazon.in/', { waitUntil: 'domcontentloaded' });
-        await page.waitForSelector('#twotabsearchtextbox', { timeout: 10000 });
+    await page.goto('https://www.amazon.in/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForSelector('#twotabsearchtextbox', { timeout: 30000 });
+    await page.type('#twotabsearchtextbox', laptopModel, { delay: 100 });
+    await page.click('input#nav-search-submit-button');
+    await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 60000 });
 
-        console.log("Typing laptop model into the search bar...");
-        await page.type('#twotabsearchtextbox', laptopModel, { delay: 100 });
-        await page.click('input#nav-search-submit-button');
-        await page.waitForSelector(".s-pagination-next");
-        await page.click(".s-pagination-next");
-        await page.waitForSelector(".s-pagination-next");
-        console.log("Checking if navigation occurs...");
-        // await page.waitForNavigation({ waitUntil: 'networkidle0' });
+    const productLinkSelector = `.s-main-slot [data-index="3"] h2 a`;
+    await page.waitForSelector(productLinkSelector, { timeout: 30000 });
+    await page.click(productLinkSelector);
+await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 90000 }); // Wait until no network activity
 
-        console.log("Waiting for the results container...");
-        // await page.waitForSelector('.s-main-slot', { timeout: 15000 });
 
-        const title = await page.$$eval("h2 span.a-color-base", (nodes) =>
-            nodes.map((n) => n.innerText)
-          );
-          
-          // Gather price
-          const price = await page.$$eval(
-            "[data-component-type='s-search-result'] span.a-price[data-a-color='base'] span.a-offscreen",
-            (nodes) => nodes.map((n) => n.innerText)
-          );
+    const nam = document.querySelector('#productTitle')?.textContent?.trim();
+    const priceElement = document.querySelector('.a-price-whole');
+    const pric = priceElement ? priceElement.textContent.trim() : 'N/A';
+    const vendorInf = document.querySelector('a[id^="sellerProfileTrigger"]')?.textContent?.trim();
 
-          const amazonSearchArray = title.slice(0, 5).map((value, index) => {
-            return {
-              title: title[index],
-              price: price[index],
-            };
-          });
-          const jsonData = JSON.stringify(amazonSearchArray, null, 2);
-          console.log(amazonSearchArray);
-        //   await browser.close();
+  
 
-        // const firstResult = await page.evaluate(() => {
-        //     const item = document.querySelector('.s-main-slot .s-result-item');
-        //     if (!item) return null;
-
-        //     const name = item.querySelector('span.a-text-normal')?.textContent;
-        //     const priceWhole = item.querySelector('span.a-price-whole')?.textContent;
-        //     const priceFraction = item.querySelector('span.a-price-fraction')?.textContent;
-        //     const vendor = item.querySelector('.a-row.a-size-base.a-color-secondary span.a-size-base')?.textContent;
-
-        //     if (name && priceWhole && priceFraction) {
-        //         return {
-        //             name: name.trim(),
-        //             price: `$${priceWhole}.${priceFraction}`,
-        //             vendor: vendor ? vendor.trim() : 'Unknown Vendor'
-        //         };
-        //     }
-        //     return null;
-        // });
-
-        console.log("Closing browser...");
-        await browser.close();
-
-        
-
-        return jsonData;
-    } catch (error) {
-        console.error("Error scraping Amazon:", error.message);
-        await browser.close();
-        throw error;
-    }
+    await browser.close();
+    return {name:nam,price:pric,vendor:vendorInf};
 }
 
 // Start the server

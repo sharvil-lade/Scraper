@@ -43,18 +43,32 @@ async function searchLaptopOnAmazon(laptopModel) {
     const productLinkSelector = `.s-main-slot [data-index="3"] h2 a`;
     await page.waitForSelector(productLinkSelector, { timeout: 30000 });
     await page.click(productLinkSelector);
-await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 90000 }); // Wait until no network activity
 
+    // Instead of waiting for a hard-coded timeout, use networkidle0 to wait for the page to stabilize.
+    try {
+        await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 60000 });
+    } catch (error) {
+        console.log("Navigation to product page took too long, but proceeding with data extraction.");
+    }
 
-    const nam = document.querySelector('#productTitle')?.textContent?.trim();
-    const priceElement = document.querySelector('.a-price-whole');
-    const pric = priceElement ? priceElement.textContent.trim() : 'N/A';
-    const vendorInf = document.querySelector('a[id^="sellerProfileTrigger"]')?.textContent?.trim();
+    const productDetails = await page.evaluate(() => {
+        const name = document.querySelector('.a-size-medium.a-color-base.a-text-normal')?.textContent?.trim();
+        // const vendor = document.querySelector('#sellerProfileTriggerId')?.textContent?.trim();
+        const vendor='yo';
+        const price = document.querySelector('.a-price-whole')?.textContent?.trim();
+        return { name, vendor, price };
+    });
 
-  
-
+    // const productDetails=async ()=>{
+        // const name = await page.$eval('#productTitle', (element) => element.textContent.trim());
+        // const vendor = await page.$('.a-price-whole');
+        // const price  =productPriceElement ? await page.evaluate(element => element.textContent.trim(), productPriceElement) : 'N/A';
+        // return { name, vendor, price };
+    // }
+    
     await browser.close();
-    return {name:nam,price:pric,vendor:vendorInf};
+    return productDetails;
+    // return { name, vendor, price };
 }
 
 // Start the server
