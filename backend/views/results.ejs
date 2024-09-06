@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laptop Search Results</title>
+</head>
+<body>
+    <h1>Search Results for "<%= model %>"</h1>
+
+    <% if (result) { %> <!-- Checking if 'result' is defined -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Laptop Name</th>
+                    <th>Price</th>
+                    <th>Vendor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><%= result.name %></td>
+                    <td><%= result.price %></td>
+                    <td><%= result.vendor %></td>
+                </tr>
+            </tbody>
+        </table>
+    <% } else { %>
+        <p>No results found.</p>
+    <% } %>
+</body>
+</html>
