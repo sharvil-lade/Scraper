@@ -41,6 +41,13 @@ function Hero() {
         >
           Submit
         </button>
+        <div className="mt-6 w-full flex justify-center p-5">
+          <ul className="list-disc list-inside text-sm text-gray-600 space-y-2">
+            <li><strong>Query 1:</strong> Product search based on exact Make/Model of a Product</li>
+            <li><strong>Query 2:</strong> Product search based on Most Relevant Specifications of a Product</li>
+            <li><strong>Query 3:</strong> Product search based on Basic Requirements of a Service</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
