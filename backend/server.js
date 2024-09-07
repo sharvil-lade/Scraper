@@ -4,7 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000; // Use environment variable if available
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -19,15 +19,16 @@ async function scrapeAmazon(searchTerm) {
     const products = [];
     const items = document.querySelectorAll('.s-main-slot .s-result-item');
 
-    items.forEach((item) => {
-      const title = item.querySelector('h2 > a > span')?.innerText || 'N/A';
-      const price = item.querySelector('.a-price-whole')?.innerText || 'N/A';
-      const link = item.querySelector('h2 > a')?.href || 'N/A';
-      if (title && price) {
+    items.forEach(item => {
+      const title = item.querySelector('h2 > a > span')?.innerText;
+      const price = item.querySelector('.a-price-whole')?.innerText;
+      const link = item.querySelector('h2 > a')?.href;
+      if (title && price && link) {
         products.push({
           title,
-          price: `₹${price}`,
+          price: `₹${price}`, // Corrected price formatting
           link: `https://www.amazon.in${link}`,
+          source: 'Amazon'
         });
       }
     });
@@ -36,7 +37,38 @@ async function scrapeAmazon(searchTerm) {
   });
 
   await browser.close();
-  return scrapedData;
+  return scrapedData.slice(0, 10); // No need to filter for 'N/A' since the condition checks for undefined
+}
+
+async function scrapeFlipkart(searchTerm) {
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  const url = `https://www.flipkart.com/search?q=${encodeURIComponent(searchTerm)}`;
+  await page.goto(url, { waitUntil: 'load', timeout: 0 });
+
+  const scrapedData = await page.evaluate(() => {
+    const products = [];
+    const items = document.querySelectorAll('._1AtVbE');
+
+    items.forEach(item => {
+      const title = item.querySelector('._4rR01T')?.innerText;
+      const price = item.querySelector('._30jeq3')?.innerText;
+      const link = item.querySelector('._1fQZEK')?.href;
+      if (title && price && link) {
+        products.push({
+          title,
+          price,
+          link: `https://www.flipkart.com${link}`,
+          source: 'Flipkart'
+        });
+      }
+    });
+
+    return products;
+  });
+
+  await browser.close();
+  return scrapedData.slice(0, 10); // No need to filter for 'N/A'
 }
 
 app.post('/scrape', async (req, res) => {
@@ -46,11 +78,13 @@ app.post('/scrape', async (req, res) => {
   }
 
   try {
-    const data = await scrapeAmazon(searchTerm);
-    res.json(data);
+    const amazonResults = await scrapeAmazon(searchTerm);
+    const flipkartResults = await scrapeFlipkart(searchTerm);
+    const combinedResults = amazonResults.concat(flipkartResults).slice(0, 10);  // Combine and limit to first 10 products overall
+    res.json(combinedResults);
   } catch (error) {
-    console.error('Error scraping Amazon:', error);
-    res.status(500).json({ error: 'Failed to scrape Amazon' });
+    console.error('Error scraping:', error);
+    res.status(500).json({ error: 'Failed to scrape' });
   }
 });
 
