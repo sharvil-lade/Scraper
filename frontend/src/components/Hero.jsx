@@ -11,9 +11,11 @@ function Hero() {
 
   const handleSubmit = () => {
     if (selectedQuery === "Query 1") {
-      navigate("/product-query"); // Navigate to product query page
+      navigate("/product-query"); // For Query 1
+    } else if (selectedQuery === "Query 2") {
+      navigate("/product-query1"); // For Query 2
     } else {
-      alert("This functionality is only for Query 1 at the moment.");
+      alert("This functionality is only for Query 1 and Query 2 at the moment.");
     }
   };
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-function Product() {
+function Product1() {
   const [productType, setProductType] = useState('');
   const [productName, setProductName] = useState('');
   const navigate = useNavigate();
@@ -18,10 +18,10 @@ function Product() {
   const handleSubmit = async () => {
     if (productType && productName) {
       try {
-        const response = await axios.post('http://localhost:5000/scrape', {
+        const response = await axios.post('http://localhost:5000/scrape1', {
           searchTerm: productName,
         });
-        navigate('/result', { state: { products: response.data } });
+        navigate('/result1', { state: { products: response.data } });
       } catch (error) {
         console.error('Error fetching data:', error);
         alert('Failed to fetch data. Please try again.');
@@ -33,7 +33,7 @@ function Product() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-4xl font-bold mb-6">Enter Product Details for Query 1</h1>
+      <h1 className="text-4xl font-bold mb-6">Enter Product Details for Query 2</h1>
       <div className="flex flex-col items-center space-y-4 w-80">
         <select
           value={productType}
@@ -56,20 +56,6 @@ function Product() {
           onChange={handleProductNameChange}
           className="w-full p-2 border border-gray-300 rounded"
         />
-        <input
-          type="text"
-          placeholder="Make"
-          // value={productName}
-          // onChange={handleProductNameChange}
-          className="w-full p-2 border border-gray-300 rounded"
-        />
-        <input
-          type="text"
-          placeholder="Model"
-          // value={productName}
-          // onChange={handleProductNameChange}
-          className="w-full p-2 border border-gray-300 rounded"
-        />
         <button
           onClick={handleSubmit}
           className="w-full p-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600"
@@ -81,4 +67,4 @@ function Product() {
   );
 }
 
-export default Product;
+export default Product1;
